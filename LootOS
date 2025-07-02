@@ -1,3 +1,4 @@
+# Add all the files above to your GitHub repo
 git add .
-git commit -m "Update Railway deployment configuration"
-git push
+git commit -m "Add Railway deployment configuration"
+git push origin main
