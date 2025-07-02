@@ -1,0 +1,4 @@
+echo "# Deploy trigger" >> README.md
+git add .
+git commit -m "trigger railway deployment"
+git push
