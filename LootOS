@@ -1,4 +1,3 @@
-
 echo "# Railway deployment $(date)" >> README.md
 git add .
 git commit -m "Trigger Railway deployment with nixpacks config"
