@@ -1,4 +1,192 @@
-# Add all the files above to your GitHub repo
+
+[phases.setup]
+nixPkgs = ["nodejs", "python39", "pip"]
+
+[phases.install]
+cmds = [
+    "pip install --no-cache-dir -r requirements.txt",
+    "cd lootos-frontend && npm install --legacy-peer-deps",
+    "cd lootos-frontend && npm run build",
+    "mkdir -p lootos-backend/src/static",
+    "cp -r lootos-frontend/dist/* lootos-backend/src/static/"
+]
+
+[start]
+cmd = "cd lootos-backend && python src/main.py"
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "nixpacks"
+  },
+  "deploy": {
+    "startCommand": "cd lootos-backend && python src/main.py",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "always"
+  }
+}
+Flask==2.3.3
+Flask-CORS==4.0.0
+Flask-SQLAlchemy==3.0.5
+Flask-JWT-Extended==4.5.3
+Flask-Migrate==4.0.5
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.7
+redis==5.0.1
+celery==5.3.4
+requests==2.31.0
+web3==6.11.3
+eth-account==0.9.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
+Werkzeug==2.3.7
+{
+  "name": "lootos-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.1",
+    "recharts": "^2.8.0",
+    "lucide-react": "^0.294.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.1.1",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.53.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.5",
+    "vite": "^4.5.0"
+  }
+}
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+  },
+  base: '/',
+})
+import os
+import sys
+from flask import Flask, send_from_directory, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__, 
+            static_folder='static',
+            static_url_path='')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
+CORS(app, origins=['*'])
+
+@app.route('/api/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'service': 'LootOS API',
+        'version': '1.0.0',
+        'environment': os.environ.get('RAILWAY_ENVIRONMENT', 'development')
+    })
+@app.route('/api/test')
+def test_config():
+    """Test configuration and environment variables"""
+    config_status = {
+        'database_url': 'configured' if os.environ.get('DATABASE_URL') else 'missing',
+        'redis_url': 'configured' if os.environ.get('REDIS_URL') else 'missing',
+        'ethereum_rpc': 'configured' if os.environ.get('ETHEREUM_RPC_URL') else 'missing',
+        'solana_rpc': 'configured' if os.environ.get('SOLANA_RPC_URL') else 'missing',
+        'coingecko_api': 'configured' if os.environ.get('COINGECKO_API_KEY') else 'missing',
+        'oneinch_api': 'configured' if os.environ.get('ONEINCH_API_KEY') else 'missing',
+        'static_folder': app.static_folder,
+        'static_files': os.listdir(app.static_folder) if os.path.exists(app.static_folder) else []
+    }
+    return jsonify(config_status)
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_react_app(path):
+    """Serve React app"""
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        
+        index_path = os.path.join(app.static_folder, 'index.html')
+        if os.path.exists(index_path):
+            return send_from_directory(app.static_folder, 'index.html')
+        else:
+            return jsonify({
+                'error': 'Frontend not built',
+                'message': 'Run npm run build in lootos-frontend directory',
+                'static_folder': app.static_folder,
+                'files': os.listdir(app.static_folder) if os.path.exists(app.static_folder) else []
+            }), 404
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=os.environ.get('FLASK_ENV') == 'development'
+    )
+import os
+from datetime import timedelta
+
+class Config:
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///lootos.db')
+    if SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
+        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://', 1)
+    
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key')
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'dev-jwt-secret')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
+    REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+    ETHEREUM_RPC_URL = os.environ.get('ETHEREUM_RPC_URL', '')
+    SOLANA_RPC_URL = os.environ.get('SOLANA_RPC_URL', '')
+    COINGECKO_API_KEY = os.environ.get('COINGECKO_API_KEY', '')
+    ONEINCH_API_KEY = os.environ.get('ONEINCH_API_KEY', '')
+    ZEROX_API_KEY = os.environ.get('ZEROX_API_KEY', '')
+    COINGECKO_API_URL = 'https://pro-api.coingecko.com/api/v3'
+    ONEINCH_API_URL = 'https://api.1inch.dev/swap/v6.0/1'
+    ZEROX_API_URL = 'https://api.0x.org/swap/v1'
+    JUPITER_API_URL = 'https://lite-api.jup.ag/v6'
+    ETH_GAS_STATION_URL = 'https://ethgasstation.info/api'
+    BLOCKNATIVE_GAS_URL = 'https://api.blocknative.com/gasprices/blockprices'
+    AAVE_API_URL = 'https://aave-api-v2.aave.com'
+    FLASHBOTS_RELAY_URL = 'https://relay.flashbots.net'
+mkdir -p lootos-backend/src/static
 git add .
 git commit -m "Add Railway deployment configuration"
 git push origin main
