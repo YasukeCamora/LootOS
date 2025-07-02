@@ -2,3 +2,6 @@ echo "# Deploy trigger" >> README.md
 git add .
 git commit -m "trigger railway deployment"
 git push
+git add .
+git commit -m "Add nixpacks config for Railway deployment"
+git push
