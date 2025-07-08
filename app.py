@@ -277,3 +277,34 @@ def get_agents():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
+@app.route('/')
+def serve_dashboard():
+    """Serve the main dashboard"""
+    try:
+        # Try to serve index.html from the same directory as app.py
+        return send_from_directory('.', 'index.html')
+    except:
+        # Fallback to JSON response
+        return jsonify({
+            'message': 'LootOS API is running',
+            'dashboard': 'index.html not found',
+            'api_endpoints': [
+                '/api/health',
+                '/api/config', 
+                '/api/price/<token>',
+                '/api/arbitrage',
+                '/api/gas-prices',
+                '/api/portfolio',
+                '/api/agents'
+            ]
+        })
+
+# Serve static files
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """Serve static files"""
+    try:
+        return send_from_directory('.', filename)
+    except:
+        return jsonify({'error': f'File {filename} not found'}), 404
