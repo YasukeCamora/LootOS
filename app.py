@@ -56,11 +56,21 @@ def get_token_price(token):
     """Get token price from CoinGecko"""
     try:
         if not COINGECKO_API_KEY:
-            return jsonify({'error': 'CoinGecko API key not configured'}), 400
+            return jsonify({'error': 'CoinGecko API key not configured', 'success': False}), 400
+        
+        # Map common token names
+        token_map = {
+            'eth': 'ethereum',
+            'btc': 'bitcoin',
+            'ethereum': 'ethereum',
+            'bitcoin': 'bitcoin'
+        }
+        
+        token_id = token_map.get(token.lower(), token.lower())
         
         url = f"https://pro-api.coingecko.com/api/v3/simple/price"
         params = {
-            'ids': token,
+            'ids': token_id,
             'vs_currencies': 'usd',
             'include_24hr_change': 'true'
         }
@@ -70,23 +80,34 @@ def get_token_price(token):
         
         if response.status_code == 200:
             data = response.json()
-            return jsonify({
-                'success': True,
-                'token': token,
-                'data': data,
-                'timestamp': datetime.now().isoformat()
-            })
+            if data:  # Check if data is not empty
+                return jsonify({
+                    'success': True,
+                    'token': token,
+                    'token_id': token_id,
+                    'data': data,
+                    'timestamp': datetime.now().isoformat()
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': f'No data found for token: {token}',
+                    'suggestion': 'Try: ethereum, bitcoin, cardano, solana'
+                }), 404
         else:
             return jsonify({
                 'success': False,
-                'error': f'API returned status {response.status_code}'
+                'error': f'CoinGecko API returned status {response.status_code}',
+                'response': response.text[:200]
             }), 400
             
     except Exception as e:
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': str(e),
+            'token': token
         }), 500
+
 
 @app.route('/api/arbitrage')
 def check_arbitrage():
