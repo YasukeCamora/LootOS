@@ -4,8 +4,14 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from datetime import datetime
 
+from flask_cors import CORS
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    'https://chipper-toffee-d13f42.netlify.app',  # Your Netlify URL
+    'http://localhost:3000',  # For local development
+    'http://localhost:5173'   # For Vite dev server
+] )
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
