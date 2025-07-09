@@ -8,10 +8,14 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app, origins=[
-    'https://chipper-toffee-d13f42.netlify.app',  # Your Netlify URL
-    'http://localhost:3000',  # For local development
-    'http://localhost:5173'   # For Vite dev server
-] )
+    'https://chipper-toffee-d13f42.netlify.app',
+    'https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--96435430.local-credentialless.webcontainer-api.io',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174'
+], 
+methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+allow_headers=['Content-Type', 'Authorization'] )
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
