@@ -6,14 +6,18 @@ from datetime import datetime
 
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app, origins=[
-    'https://chipper-toffee-d13f42.netlify.app',
-    'https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--96435430.local-credentialless.webcontainer-api.io',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174'
-], 
+app = Flask(__name__ )
+CORS(app, 
+     origins=[
+         'https://chipper-toffee-d13f42.netlify.app',
+         'https://zp1v56uxy8rdx5ypatb0ockcb9tr6a-oci3--5173--96435430.local-credentialless.webcontainer-api.io',
+         'http://localhost:3000',
+         'http://localhost:5173'
+     ],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+     supports_credentials=True )
+
 methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 allow_headers=['Content-Type', 'Authorization'] )
 
