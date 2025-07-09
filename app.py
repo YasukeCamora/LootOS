@@ -1,3 +1,4 @@
+from flask import Flask, jsonify, request, send_from_directory
 import os
 import requests
 from flask import Flask, jsonify, request
@@ -302,11 +303,13 @@ def serve_dashboard():
             ]
         })
 
-# Serve static files
+@app.route('/')
+def serve_dashboard():
+    """Serve the main dashboard"""
+    return send_from_directory('.', 'index.html')
+
 @app.route('/<path:filename>')
 def serve_static(filename):
     """Serve static files"""
-    try:
-        return send_from_directory('.', filename)
-    except:
-        return jsonify({'error': f'File {filename} not found'}), 404
+    return send_from_directory('.', filename)
+
