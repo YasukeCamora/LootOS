@@ -1,7 +1,6 @@
-from flask import Flask, jsonify, request, send_from_directory
 import os
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from datetime import datetime
 
@@ -25,7 +24,7 @@ def home():
         'timestamp': datetime.now().isoformat(),
         'features': [
             'Multi-chain trading',
-            'Arbitrage detection',
+            'Arbitrage detection', 
             'Flash loan integration',
             'Real-time analytics'
         ]
@@ -62,7 +61,7 @@ def get_token_price(token):
         # Map common token names
         token_map = {
             'eth': 'ethereum',
-            'btc': 'bitcoin',
+            'btc': 'bitcoin', 
             'ethereum': 'ethereum',
             'bitcoin': 'bitcoin',
             'cardano': 'cardano',
@@ -71,20 +70,20 @@ def get_token_price(token):
         
         token_id = token_map.get(token.lower(), token.lower())
         
-        # Use regular API endpoint for Demo keys
-url = f"https://api.coingecko.com/api/v3/simple/price"
+        # Use demo API endpoint
+        url = "https://api.coingecko.com/api/v3/simple/price"
         params = {
             'ids': token_id,
             'vs_currencies': 'usd',
             'include_24hr_change': 'true'
         }
-  headers = {'x-cg-demo-api-key': COINGECKO_API_KEY}
+        headers = {'x-cg-demo-api-key': COINGECKO_API_KEY}
         
         response = requests.get(url, params=params, headers=headers, timeout=10 )
         
         if response.status_code == 200:
             data = response.json()
-            if data:  # Check if data is not empty
+            if data:
                 return jsonify({
                     'success': True,
                     'token': token,
@@ -111,17 +110,16 @@ url = f"https://api.coingecko.com/api/v3/simple/price"
             'error': str(e),
             'token': token
         }), 500
-        
+
 @app.route('/api/arbitrage')
 def check_arbitrage():
     """Check for arbitrage opportunities"""
     try:
-        # Simulate arbitrage data for demo
         opportunities = [
             {
                 'token_pair': 'ETH/USDC',
                 'dex_1': 'Uniswap',
-                'dex_2': 'SushiSwap',
+                'dex_2': 'SushiSwap', 
                 'price_1': 2450.50,
                 'price_2': 2455.75,
                 'profit_potential': 0.21,
@@ -157,32 +155,17 @@ def check_arbitrage():
 def get_gas_prices():
     """Get current gas prices"""
     try:
-        # Get gas prices from ETH Gas Station
-        response = requests.get('https://ethgasstation.info/api/ethgasAPI.json', timeout=10 )
-        
-        if response.status_code == 200:
-            data = response.json()
-            return jsonify({
-                'success': True,
-                'gas_prices': {
-                    'fast': data.get('fast', 0) / 10,  # Convert to gwei
-                    'standard': data.get('average', 0) / 10,
-                    'safe': data.get('safeLow', 0) / 10
-                },
-                'timestamp': datetime.now().isoformat()
-            })
-        else:
-            # Fallback gas prices
-            return jsonify({
-                'success': True,
-                'gas_prices': {
-                    'fast': 25,
-                    'standard': 20,
-                    'safe': 15
-                },
-                'note': 'Using fallback gas prices',
-                'timestamp': datetime.now().isoformat()
-            })
+        # Fallback gas prices for demo
+        return jsonify({
+            'success': True,
+            'gas_prices': {
+                'fast': 25,
+                'standard': 20,
+                'safe': 15
+            },
+            'note': 'Demo gas prices',
+            'timestamp': datetime.now().isoformat()
+        })
             
     except Exception as e:
         return jsonify({
@@ -194,7 +177,6 @@ def get_gas_prices():
 def get_portfolio():
     """Get portfolio data"""
     try:
-        # Demo portfolio data
         portfolio = {
             'total_value': 15750.25,
             'daily_change': 2.34,
@@ -207,7 +189,7 @@ def get_portfolio():
                     'change_24h': 1.8
                 },
                 {
-                    'token': 'BTC',
+                    'token': 'BTC', 
                     'amount': 0.05,
                     'value': 2162.50,
                     'change_24h': 0.5
@@ -247,7 +229,7 @@ def get_agents():
                 'success_rate': 85.5
             },
             {
-                'id': 'flash_loan_bot_1',
+                'id': 'flash_loan_bot_1', 
                 'name': 'Flash Loan Exploiter',
                 'status': 'active',
                 'profit_24h': 123.45,
@@ -280,36 +262,3 @@ def get_agents():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-
-@app.route('/')
-def serve_dashboard():
-    """Serve the main dashboard"""
-    try:
-        # Try to serve index.html from the same directory as app.py
-        return send_from_directory('.', 'index.html')
-    except:
-        # Fallback to JSON response
-        return jsonify({
-            'message': 'LootOS API is running',
-            'dashboard': 'index.html not found',
-            'api_endpoints': [
-                '/api/health',
-                '/api/config', 
-                '/api/price/<token>',
-                '/api/arbitrage',
-                '/api/gas-prices',
-                '/api/portfolio',
-                '/api/agents'
-            ]
-        })
-
-@app.route('/')
-def serve_dashboard():
-    """Serve the main dashboard"""
-    return send_from_directory('.', 'index.html')
-
-@app.route('/<path:filename>')
-def serve_static(filename):
-    """Serve static files"""
-    return send_from_directory('.', filename)
-
