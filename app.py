@@ -268,6 +268,212 @@ def get_agents():
             'success': False,
             'error': str(e)
         }), 500
+@app.route('/api/dashboard-analytics')
+def get_dashboard_analytics():
+    """Get dashboard analytics data"""
+    try:
+        analytics = {
+            'total_profit': 1247.89,
+            'daily_profit': 89.45,
+            'weekly_profit': 456.78,
+            'monthly_profit': 1247.89,
+            'profit_change_24h': 12.5,
+            'active_trades': 7,
+            'successful_trades': 156,
+            'total_trades': 189,
+            'success_rate': 82.5,
+            'portfolio_value': 15750.25,
+            'portfolio_change_24h': 2.34,
+            'top_performing_token': {
+                'symbol': 'ETH',
+                'profit': 234.56,
+                'change_24h': 5.8
+            },
+            'recent_trades': [
+                {
+                    'id': 'trade_001',
+                    'type': 'arbitrage',
+                    'token_pair': 'ETH/USDC',
+                    'profit': 45.67,
+                    'timestamp': datetime.now().isoformat()
+                },
+                {
+                    'id': 'trade_002', 
+                    'type': 'flash_loan',
+                    'token_pair': 'BTC/USDT',
+                    'profit': 123.45,
+                    'timestamp': datetime.now().isoformat()
+                }
+            ]
+        }
+        
+        return jsonify({
+            'success': True,
+            'analytics': analytics,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/portfolio-overview')
+def get_portfolio_overview():
+    """Get portfolio overview data"""
+    try:
+        overview = {
+            'total_value': 15750.25,
+            'daily_change': 234.56,
+            'daily_change_percent': 1.52,
+            'weekly_change': 1247.89,
+            'weekly_change_percent': 8.6,
+            'monthly_change': 2456.78,
+            'monthly_change_percent': 18.5,
+            'asset_allocation': [
+                {
+                    'symbol': 'ETH',
+                    'name': 'Ethereum',
+                    'amount': 5.5,
+                    'value': 13475.75,
+                    'percentage': 85.5,
+                    'change_24h': 1.8
+                },
+                {
+                    'symbol': 'BTC',
+                    'name': 'Bitcoin', 
+                    'amount': 0.05,
+                    'value': 2162.50,
+                    'percentage': 13.7,
+                    'change_24h': 0.5
+                },
+                {
+                    'symbol': 'USDC',
+                    'name': 'USD Coin',
+                    'amount': 112.00,
+                    'value': 112.00,
+                    'percentage': 0.7,
+                    'change_24h': 0.0
+                }
+            ],
+            'performance_metrics': {
+                'sharpe_ratio': 1.85,
+                'max_drawdown': -5.2,
+                'volatility': 12.8,
+                'beta': 0.95
+            }
+        }
+        
+        return jsonify({
+            'success': True,
+            'overview': overview,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/wallet/connect', methods=['POST'])
+def connect_wallet():
+    """Handle wallet connection"""
+    try:
+        data = request.get_json()
+        wallet_type = data.get('type', '')
+        address = data.get('address', '')
+        
+        if not wallet_type or not address:
+            return jsonify({
+                'success': False,
+                'error': 'Wallet type and address required'
+            }), 400
+        
+        # Simulate wallet connection
+        wallet_info = {
+            'type': wallet_type,
+            'address': address,
+            'connected': True,
+            'balance': {
+                'ETH': 5.5,
+                'BTC': 0.05,
+                'USDC': 112.00
+            },
+            'network': 'mainnet' if wallet_type == 'metamask' else 'solana-mainnet'
+        }
+        
+        return jsonify({
+            'success': True,
+            'wallet': wallet_info,
+            'message': f'{wallet_type.title()} wallet connected successfully',
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/wallet/disconnect', methods=['POST'])
+def disconnect_wallet():
+    """Handle wallet disconnection"""
+    try:
+        return jsonify({
+            'success': True,
+            'message': 'Wallet disconnected successfully',
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/wallet/balance/<address>')
+def get_wallet_balance(address):
+    """Get wallet balance for address"""
+    try:
+        # Simulate balance check
+        balance = {
+            'address': address,
+            'balances': [
+                {
+                    'token': 'ETH',
+                    'symbol': 'ETH',
+                    'amount': 5.5,
+                    'value_usd': 13475.75
+                },
+                {
+                    'token': 'BTC',
+                    'symbol': 'BTC', 
+                    'amount': 0.05,
+                    'value_usd': 2162.50
+                },
+                {
+                    'token': 'USDC',
+                    'symbol': 'USDC',
+                    'amount': 112.00,
+                    'value_usd': 112.00
+                }
+            ],
+            'total_value_usd': 15750.25
+        }
+        
+        return jsonify({
+            'success': True,
+            'balance': balance,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
