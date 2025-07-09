@@ -52,7 +52,7 @@ def config_status():
         'environment': os.environ.get('RAILWAY_ENVIRONMENT', 'development')
     })
 
-@app.route('/api/price/<token>' )
+@app.route('/api/price/<token>')
 def get_token_price(token):
     """Get token price from CoinGecko"""
     try:
@@ -72,13 +72,13 @@ def get_token_price(token):
         token_id = token_map.get(token.lower(), token.lower())
         
         # Use regular API endpoint for Demo keys
-        url = f"https://api.coingecko.com/api/v3/simple/price"
+url = f"https://api.coingecko.com/api/v3/simple/price"
         params = {
             'ids': token_id,
             'vs_currencies': 'usd',
             'include_24hr_change': 'true'
         }
-        headers = {'x-cg-demo-api-key': COINGECKO_API_KEY}  # Use demo header
+  headers = {'x-cg-demo-api-key': COINGECKO_API_KEY}
         
         response = requests.get(url, params=params, headers=headers, timeout=10 )
         
