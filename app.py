@@ -68,7 +68,7 @@ def get_token_price(token):
         
         token_id = token_map.get(token.lower(), token.lower())
         
-        url = f"https://pro-api.coingecko.com/api/v3/simple/price"
+        url = f"https://api.coingecko.com/api/v3/simple/price"
         params = {
             'ids': token_id,
             'vs_currencies': 'usd',
