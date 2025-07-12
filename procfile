@@ -1,3 +1,2 @@
-web: gunicorn app:app --bind 0.0.0.0:$PORT
 worker: celery -A worker worker --loglevel=info --concurrency=2
 beat: celery -A worker beat --loglevel=info
